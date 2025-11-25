@@ -1,11 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
 <head>
-    <!-- 其他原本的 meta 標籤放這裡 -->
-    
-    <!-- iOS 桌面圖示與全螢幕設定 -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="加拿大之旅">
-    <link rel="apple-touch-icon" href="https://img.icons8.com/color/180/maple-leaf.png">
-    
-    <!-- 原本的 CSS style ... -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2025 Canada Trip 🇨🇦</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #F5F7FA;
+            --card-bg: #FFFFFF;
+            --text-primary: #2C3E50;
+            --text-secondary: #7F8C8D;
+            --accent-blue: #5D8AA8; /* Nordic Blue */
+            --accent-warm: #D4A373; /* Maple/Wood */
+            --highlight-bg: #EAF2F8;
+            --nav-height: 60px;
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+
+        /* Header */
+        header {
+            background: var(--card-bg);
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+        .trip-date { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+
+        /* Tabs Content */
+        .tab-content { display: none; animation: fadeIn 0.3s ease; padding: 15px; }
+        .tab-content.active { display: block; }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        /* Date Header in Card */
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .day-tag {
+            background: var(--accent-blue);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .date-text { font-weight: 700; font-size: 16px; }
+        
+        /* Weather Widget inside Card */
+        .weather-pill {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        /* Event Items */
+        .event {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .event:last-child { margin-bottom: 0; }
+        .event-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--highlight-bg);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-blue);
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .event-details { flex: 1; }
+        .event-title { font-weight: 600; margin-bottom: 4px; font-size: 15px; }
+        .event-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+        
+        /* Highlights & Buttons */
+        .tag-highlight {
+            color: var(--accent-warm);
+            font-weight: 600;
+            background: rgba(212, 163, 115, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            background: var(--text-primary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            text-decoration: none;
+            transition: transform 0.1s;
+        }
+        .btn-nav:active { transform: scale(0.95); }
+
+        /* Tour Guide Section */
+        .guide-tip {
+            background: #FFFAF0;
+            border-left: 3px solid var(--accent-warm);
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+            color: #5a4a3a;
+        }
+        .guide-tip strong { display: block; margin-bottom: 3px; color: var(--accent-warm); }
+
+        /* Info Tab Styles */
+        .info-group { margin-bottom: 20px; }
+        .info-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 8px; }
+        .info-value { font-size: 15px; font-weight: 500; word-break: break-all; }
+        .code-box {
+            background: #eee;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Shopping List */
+        .shopping-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .shopping-check { margin-right: 10px; accent-color: var(--accent-blue); }
+        .shopping-img-placeholder {
+            width: 40px; height: 40px; background: #ddd; border-radius: 6px; margin-right: 10px;
+            background-size: cover; background-position: center;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #eee;
+            z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 10px;
+            text-decoration: none;
+            width: 100%;
+            height: 100%;
+        }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+        .nav-item.active { color: var(--text-primary); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Utility */
+        .flight-line { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
+        .flight-time { font-weight: bold; }
+        .flight-airport { color: var(--text-secondary); }
+    </style>
 </head>
+<body>
+
+    <header>
+        <div>
+            <h1>2025 加拿大之旅 🇨🇦</h1>
+            <span class="trip-date">Dec 19 - Jan 02</span>
+        </div>
+        <div style="width: 32px; height: 32px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-user" style="font-size: 14px; color: #888;"></i>
+        </div>
+    </header>
+
+    <!-- ITINERARY TAB -->
+    <div id="tab-trip" class="tab-content active">
+        
+        <!-- Day 1 -->
+        <div class="card">
+            <div class="day-header">
+                <span class="day-tag">Day 1</span>
+                <span class="date-text">12/19 Fri</span>
+                <div class="weather-pill"><i class="fas fa-snowflake"></i> -3°C TPE/YYZ</div>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-plane-departure"></i></div>
+                <div class="event-details">
+                    <div class="event-title">出發前往多倫多</div>
+                    <div class="event-desc">
+                        Check-in: 11:20 TPE T1<br>
+                        <span style="color: #e74c3c;">13:20</span> TPE ➔ HKG<br>
+                        <span style="color: #e74c3c;">19:20</span> YYZ T3 抵達
+                    </div>
+                </div>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-bus"></i></div>
+                <div class="event-details">
+                    <div class="event-title">前往蒙特婁 (Montreal)</div>
+                    <div class="event-desc">搭乘夜車/巴士移動。</div>
+                    <div class="guide-tip">
+                        <strong>💡 導遊筆記</strong>
+                        長途移動請備好頸枕。加拿大冬天室內外溫差大，建議洋蔥式穿搭。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day 2 -->
+        <div class="card">
+            <div class="day-header">
+                <span class="day-tag">Day 2</span>
+                <span class="date-text">12/20 Sat</span>
+                <div class="weather-pill"><i class="fas fa-cloud"></i> -8°C Montreal</div>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-city"></i></div>
+                <div class="event-details">
+                    <div class="event-title">蒙特婁市區探索</div>
+                    <div class="event-desc">Montreal City Tour</div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Old+Montreal" target="_blank" class="btn-nav"><i class="fas fa-location-arrow"></i> 導航至舊城區</a>
+                    <div class="guide-tip">
+                        <strong>💡 必吃推薦</strong>
+                        一定要試試 <span class="tag-highlight">St-Viateur Bagel</span> 貝果和 <span class="tag-highlight">Schwartz's Deli</span> 煙燻肉三明治！
+                    </div>
+                </div>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-home"></i></div>
+                <div class="event-details">
+                    <div class="event-title">住宿：許家</div>
+                    <div class="event-desc">1440 Rue Pierce, Montréal</div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=1440+Rue+Pierce+Montreal" target="_blank" class="btn-nav"><i class="fas fa-location-arrow"></i> 導航</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day 3-4 -->
+        <div class="card">
+            <div class="day-header">
+                <span class="day-tag">Day 3-4</span>
+                <span class="date-text">12/21-22 Sun/Mon</span>
+                <div class="weather-pill"><i class="fas fa-snowman"></i> -12°C Skiing</div>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-skiing"></i></div>
+                <div class="event-details">
+                    <div class="event-title">滑雪行程</div>
+                    <div class="event-desc">全日滑雪活動。</div>
+                    <div class="guide-tip">
+                        <strong>💡 準備提醒</strong>
+                        記得攜帶：墨鏡（雪盲）、防水手套、厚襪子。如果是去 Mont-Tremblant，記得逛逛彩色小鎮。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day 5 -->
+        <div class="card">
+            <div class="day-header">
+                <span class="day-tag">Day 5</span>
+                <span class="date-text">12/23 Tue</span>
+                <div class="weather-pill"><i class="fas fa-cloud-sun"></i> -10°C Quebec</div>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-water"></i></div>
+                <div class="event-details">
+                    <div class="event-title">魁北克城 & 溫泉</div>
+                    <div class="event-desc">Quebec City + Spa</div>
+                </div>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-sleigh"></i></div>
+                <div class="event-details">
+                    <div class="event-title">百年溜滑梯</div>
+                    <div class="event-desc">
+                        Dufferin Terrace Toboggan Slide<br>
+                        票價：<span class="tag-highlight">5 CAD / 人</span><br>
+                        售票口：The Au 1884 kiosk
+                    </div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Au+1884+Quebec" target="_blank" class="btn-nav"><i class="fas fa-location-arrow"></i> 導航</a>
+                    <div class="guide-tip">
+                        <strong>💡 拍照熱點</strong>
+                        就在芳堤娜城堡飯店前，滑完一定要在上面的涼亭喝杯熱巧克力。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day 6 -->
+        <div class="card">
+            <div class="day-header">
+                <span class="day-tag">Day 6</span>
+                <span class="date-text">12/24 Wed</span>
+                <div class="weather-pill"><i class="fas fa-holly-berry"></i> Xmas Eve</div>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-tree"></i></div>
+                <div class="event-details">
+                    <div class="event-title">Montreal Xmas Market</div>
+                    <div class="event-desc">蒙特婁聖誕市集體驗。</div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Place+des+Arts+Montreal" target="_blank" class="btn-nav"><i class="fas fa-location-arrow"></i> 搜尋市集</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day 7 -->
+        <div class="card">
+            <div class="day-header">
+                <span class="day-tag">Day 7</span>
+                <span class="date-text">12/25 Thu</span>
+                <div class="weather-pill"><i class="fas fa-gift"></i> Xmas</div>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-city"></i></div>
+                <div class="event-details">
+                    <div class="event-title">Toronto City</div>
+                    <div class="event-desc">聖誕節當日，注意很多商店可能提早打烊或未營業。</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Days 8-9 -->
+        <div class="card">
+            <div class="day-header">
+                <span class="day-tag">Day 8-9</span>
+                <span class="date-text">12/26-27 Fri/Sat</span>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-map-pin"></i></div>
+                <div class="event-details">
+                    <div class="event-title">Montreal & 待定</div>
+                    <div class="event-desc">12/26 Boxing Day (購物折扣日！)<br>12/27 行程待定</div>
+                    <div class="guide-tip">
+                        <strong>💡 購物攻略</strong>
+                        Boxing Day 是加拿大最大的折扣日，建議去 Eaton Centre 或 Premium Outlets 掃貨。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Days 10-12 NY -->
+        <div class="card">
+            <div class="day-header">
+                <span class="day-tag">Day 10-12</span>
+                <span class="date-text">12/28-30 Sun-Tue</span>
+                <div class="weather-pill"><i class="fas fa-building"></i> NY</div>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-flag-usa"></i></div>
+                <div class="event-details">
+                    <div class="event-title">紐約 New York</div>
+                    <div class="event-desc">三天紐約快閃。</div>
+                    <div class="guide-tip">
+                        <strong>💡 紐約筆記</strong>
+                        記得檢查 ESTA 是否生效。時代廣場、中央公園、第五大道是必去經典。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day 13-14 -->
+        <div class="card">
+            <div class="day-header">
+                <span class="day-tag">Day 13-14</span>
+                <span class="date-text">12/31 - 01/01</span>
+            </div>
+            <div class="event">
+                <div class="event-icon"><i class="fas fa-glass-cheers"></i></div>
+                <div class="event-details">
+                    <div class="event-title">跨年 & 返程</div>
+                    <div class="event-desc">
+                        12/31: Montreal 跨年<br>
+                        01/01: Toronto<br>
+                        <span style="color:var(--accent-blue); font-weight:bold;">Check-in: 22:35 YYZ T3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- INFO TAB -->
+    <div id="tab-info" class="tab-content">
+        
+        <div class="card">
+            <h3 style="margin-top:0;">🛂 簽證與文件</h3>
+            <div class="info-group">
+                <div class="info-label">加拿大 eTA</div>
+                <div class="code-box">O890725902 <i class="far fa-copy" onclick="alert('Copied!')"></i></div>
+            </div>
+            <div class="info-group">
+                <div class="info-label">美國 ESTA</div>
+                <div class="code-box">O01R459S7S8032M3 <i class="far fa-copy" onclick="alert('Copied!')"></i></div>
+            </div>
+            <div class="info-group">
+                <div class="info-label">住宿 (Montreal)</div>
+                <div class="info-value">Home, 1440 Rue Pierce, Montréal, QC H3H 2K1</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0;">✈️ 航班資訊</h3>
+            <div class="info-group">
+                <div class="info-label">去程 12/19</div>
+                <div class="flight-line"><span class="flight-time">13:20</span> <span class="flight-airport">TPE T1</span></div>
+                <div class="flight-line"><span class="flight-time">15:25</span> <span class="flight-airport">HKG T1</span></div>
+                <hr style="border:0; border-top:1px dashed #ddd; margin: 5px 0;">
+                <div class="flight-line"><span class="flight-time">--:--</span> <span class="flight-airport">HKG</span></div>
+                <div class="flight-line"><span class="flight-time">21:00</span> <span class="flight-airport">YYZ T3</span></div>
+            </div>
+            <div class="info-group">
+                <div class="info-label">回程 01/02 (Day 14 Check-in)</div>
+                <div class="flight-line"><span class="flight-time">00:35</span> <span class="flight-airport">YYZ T3</span></div>
+                <div class="flight-line"><span class="flight-time">05:15</span> <span class="flight-airport">HKG T1</span></div>
+                <hr style="border:0; border-top:1px dashed #ddd; margin: 5px 0;">
+                <div class="flight-line"><span class="flight-time">07:00</span> <span class="flight-airport">HKG</span></div>
+                <div class="flight-line"><span class="flight-time">08:40</span> <span class="flight-airport">TPE T1</span></div>
+            </div>
+            <div class="info-label">行李規定</div>
+            <div class="info-value">手提 7kg / 託運 23kg</div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0;">🛍️ 購物清單</h3>
+            <div class="shopping-item">
+                <input type="checkbox" class="shopping-check">
+                <div class="shopping-img-placeholder" style="background-image: url('https://m.media-amazon.com/images/I/81tM1+lq+nL._AC_UF1000,1000_QL80_.jpg');"></div>
+                <div>
+                    <div style="font-weight:600;">Maple Crunch</div>
+                    <div style="font-size:12px; color:#888;">楓糖巧克力/餅乾</div>
+                </div>
+            </div>
+            <div class="shopping-item">
+                <input type="checkbox" class="shopping-check">
+                <div class="shopping-img-placeholder" style="background-image: url('https://pics.walgreens.com/prodimg/437563/900.jpg');"></div>
+                <div>
+                    <div style="font-weight:600;">Miss Vickies</div>
+                    <div style="font-size:12px; color:#888;">洋芋片</div>
+                </div>
+            </div>
+            <div class="shopping-item">
+                <input type="checkbox" class="shopping-check">
+                <div class="shopping-img-placeholder" style="background-image: url('https://i5.walmartimages.com/seo/Sun-Chips-French-Onion-Multigrain-Snacks-7-oz-Bag_53046108-923d-4424-9f1e-9b8743f35b93.c3132e8d929614d43366b5a042924498.jpeg');"></div>
+                <div>
+                    <div style="font-weight:600;">SunChips</div>
+                    <div style="font-size:12px; color:#888;">酸奶洋蔥口味 (綠色包裝)</div>
+                </div>
+            </div>
+            <div class="shopping-item">
+                <input type="checkbox" class="shopping-check">
+                <div class="shopping-img-placeholder" style="background-image: url('https://www.tillamook.com/sites/default/files/2021-03/IceCream_OregonStrawberry_Hero_1.png');"></div>
+                <div>
+                    <div style="font-weight:600;">Tillamook</div>
+                    <div style="font-size:12px; color:#888;">冰淇淋 (推草莓味)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0;">🧳 打包檢查</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <label><input type="checkbox"> 北臉羽絨外套</label>
+                <label><input type="checkbox"> 白色羽絨</label>
+                <label><input type="checkbox"> 白手套</label>
+                <label><input type="checkbox" style="accent-color:red;"> 圍巾 (顏色?)</label>
+                <label><input type="checkbox"> 貼式暖暖包</label>
+                <label><input type="checkbox"> 羊襪子 x3</label>
+                <label><input type="checkbox"> 發熱衣 x3</label>
+                <label><input type="checkbox"> 貓耳帽/冷帽</label>
+                <label><input type="checkbox"> 墨鏡</label>
+                <label><input type="checkbox"> 雪靴</label>
+                <label><input type="checkbox"> 牙刷/浴巾</label>
+                <label><input type="checkbox"> 真空收納袋</label>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BUDGET TAB -->
+    <div id="tab-budget" class="tab-content">
+        <div class="card">
+            <h3 style="margin-top:0;">💰 預算與記帳</h3>
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <div style="text-align:center;">
+                    <div style="font-size:12px; color:#888;">預算 (CAD)</div>
+                    <div style="font-size:20px; font-weight:700;">$3,000</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:12px; color:#888;">已支出</div>
+                    <div style="font-size:20px; font-weight:700; color:#e74c3c;">$125</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:12px; color:#888;">剩餘</div>
+                    <div style="font-size:20px; font-weight:700; color:#27ae60;">$2,875</div>
+                </div>
+            </div>
+            
+            <div style="background:#f9f9f9; padding:15px; border-radius:8px;">
+                <h4 style="margin:0 0 10px 0; font-size:14px;">快速記帳</h4>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" placeholder="項目" style="flex:2; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                    <input type="number" placeholder="$" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                </div>
+                <button style="width:100%; margin-top:10px; background:var(--text-primary); color:white; border:none; padding:10px; border-radius:4px;">新增支出</button>
+            </div>
+
+            <div style="margin-top:20px;">
+                <h4 style="margin:0 0 10px 0; font-size:14px;">支出紀錄</h4>
+                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+                    <span>Toboggan Slide</span>
+                    <span>$5.00</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+                    <span>Coffee</span>
+                    <span>$4.50</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" onclick="switchTab('tab-trip', this)">
+            <i class="fas fa-map-signs"></i>
+            <span>行程</span>
+        </a>
+        <a href="#" class="nav-item" onclick="switchTab('tab-info', this)">
+            <i class="fas fa-suitcase"></i>
+            <span>資訊</span>
+        </a>
+        <a href="#" class="nav-item" onclick="switchTab('tab-budget', this)">
+            <i class="fas fa-wallet"></i>
+            <span>預算</span>
+        </a>
+    </nav>
+
+    <script>
+        function switchTab(tabId, element) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            // Show target content
+            document.getElementById(tabId).classList.add('active');
+            
+            // Update nav active state
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo(0,0);
+        }
+    </script>
+</body>
+</html>
